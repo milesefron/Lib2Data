@@ -1,0 +1,10 @@
+[
+    {
+        "name": "input",
+        "value": "./data/test-data.csv"
+    },
+    {
+        "name": "dedup",
+        "value": "false"
+    }
+]
