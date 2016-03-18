@@ -1,20 +1,20 @@
 package edu.illinois.bibinfo;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class CallNumber
 {
-	public static final int DIGITS_OF_PRECISION = 2;
 
-	private Pattern startsWithNumeric = Pattern.compile("^[0-9].*");
+	public static final int DEWEY_TYPE = 1;
 
+	public static final Pattern LEADING_DOT_PATTERN = Pattern.compile(" \\.");
+	public static final Pattern META_PATTERN = Pattern.compile("[ \\-\\/]");
+	public static final Pattern NUMERIC_PATTERN = Pattern.compile("^[0-9].*");
+	
 	private static final Map<String, String> LETTERS_TO_DIGITS;
 	static {
 		Map<String, String> map = new HashMap<String, String>();
@@ -47,74 +47,54 @@ public class CallNumber
 		LETTERS_TO_DIGITS = Collections.unmodifiableMap(map);
 	}
 
+	private int digitsOfPrecision = 2;
+
+
+
 	/**
-	 * Is this call number encoded as Dewey, LC, etc?
-	 * 
 	 * @param callNumber
 	 * @return
 	 */
-	private CallNumberType callNumberType(String callNumber)
+	public String CallNumberToSortable(String callNumber, int callNumberType)
 	{
-		if(startsWithNumeric.matcher(callNumber).matches())
-			return CallNumberType.DEWEY;
-
-		if(callNumber.contains(":"))		// not sure this is an adequate test
-			return CallNumberType.SUDOC;
-
-		return CallNumberType.LC;
-	}
-
-	public String CallNumberToSortable(String callNumber)
-	{
-		String[] temp = callNumber.split(" ");
-		callNumber = temp[0].trim();
 		
-		CallNumberType type = callNumberType(callNumber);
+		if(callNumberType != DEWEY_TYPE)
+			return null;
 
-		if(type.equals(CallNumberType.DEWEY)) 
-		{
-			if(callNumber.contains("-") ||
-					callNumber.contains("/"))
-				return null;
-			
-			Double numeric = Double.parseDouble(callNumber);
-			numeric *= Math.pow(10, DIGITS_OF_PRECISION);
-			Integer intRep = numeric.intValue();
-			String sortable = intRep.toString();
-			
-			return sortable;
-			
-		}	else {
-			System.err.println("Skipping unhandled CallNumberType: " + callNumber);
+		callNumber = LEADING_DOT_PATTERN.matcher(callNumber).replaceAll(" ");
+		
+		String[] callNumberFields = META_PATTERN.split(callNumber);
+		
+		callNumber = callNumberFields[0].trim();
+
+
+
+		if(! NUMERIC_PATTERN.matcher(callNumber).matches()) {
+			System.err.println("skipping weird Dewey prefix: " + callNumber);
 			return null;
 		}
 
-	}
-
-
-	
-	public static void main(String[] args)
-	{
-		CallNumber callNumberObj = new CallNumber();
-		
-		Scanner in = new Scanner(System.in);
-		String callNumber = "";
-		while(! callNumber.equals("dummy")) {
-			System.out.print("> ");
-			callNumber = in.nextLine();
-			
-			if(callNumber.equalsIgnoreCase("q"))
-				System.exit(0);
-			
-			String sortable = callNumberObj.CallNumberToSortable(callNumber);
-			
-			if(sortable == null)
-				continue;
-			
-			
-
-			System.out.println(":: " + sortable + " ::");
+		Double numeric = 0.0;
+		try {
+			numeric = Double.parseDouble(callNumber);
+		} catch (Exception e) {
+			System.err.println("BAD DEWEY: " + callNumber);
+			return null;
 		}
-		in.close();
+		
+		numeric *= Math.pow(10, digitsOfPrecision);
+		Integer intRep = numeric.intValue();
+		String sortable = intRep.toString();
+
+		return sortable;
+
+
+
 	}
+
+	public void setDigitsOfPrecision(int digitsOfPrecision) {
+		this.digitsOfPrecision = digitsOfPrecision;
+	}
+
+
 }

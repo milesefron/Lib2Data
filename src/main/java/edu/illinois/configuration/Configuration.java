@@ -13,19 +13,19 @@ import java.util.Map;
  */
 public abstract class Configuration
 {
-	protected List<Parameter> parameters;
-	protected Map<String,Parameter> paramMap;
+	protected List<Parameter> parameterList;
+	protected Map<String,Parameter> parameterMap;
 	
 	public Configuration()
 	{
-		parameters = new ArrayList<Parameter>();
-		paramMap = new HashMap<String,Parameter>();
+		parameterList = new ArrayList<Parameter>();
+		parameterMap = new HashMap<String,Parameter>();
 	}
 	
 	public void addParameter(Parameter param)
 	{
-		parameters.add(param);
-		paramMap.put(param.getName(), param);
+		parameterList.add(param);
+		parameterMap.put(param.getName(), param);
 	}
 	
 	/**
@@ -36,7 +36,7 @@ public abstract class Configuration
 	 */
 	public List<Parameter> getParams()
 	{
-		return parameters;
+		return parameterList;
 	}
 	
 	/**
@@ -47,7 +47,7 @@ public abstract class Configuration
 	 */
 	public Map<String,Parameter> getParamMap()
 	{
-		return paramMap;
+		return parameterMap;
 	}
 	
 	/**

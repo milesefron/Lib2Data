@@ -4,10 +4,10 @@ import java.util.regex.Pattern;
 
 public class ColumnReducer
 {
-	public static final Pattern SEP_PATTERN = Pattern.compile(",");
+	public static final Pattern COL_SEP = Pattern.compile(",");
 	
 	public static String[] separateFields(String rawLine) {
-		String[] fields = SEP_PATTERN.split(rawLine);
+		String[] fields = COL_SEP.split(rawLine);
 		return fields;
 	}
 	

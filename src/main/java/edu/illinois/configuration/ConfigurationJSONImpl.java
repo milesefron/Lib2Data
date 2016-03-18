@@ -24,11 +24,11 @@ public class ConfigurationJSONImpl extends Configuration
 		try
 		{
 			reader = new JsonReader(new FileReader(pathToParams));
-			parameters = gson.fromJson(reader, collectionType);
+			parameterList = gson.fromJson(reader, collectionType);
 			
-			paramMap = new HashMap<String,Parameter>();
-			for(Parameter param : parameters)
-				paramMap.put(param.getName(), param);
+			parameterMap = new HashMap<String,Parameter>();
+			for(Parameter param : parameterList)
+				parameterMap.put(param.getName(), param);
 			
 		} catch (FileNotFoundException e)
 		{

@@ -5,11 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 
 import edu.illinois.bibinfo.CallNumber;
 import edu.illinois.configuration.Configuration;
@@ -19,10 +17,11 @@ import edu.illinois.transformations.ColumnReducer;
 
 public class MakeSortableCallNumbers
 {
-	public static final String DATA_SEP_PARAM = ",";
+	public static final String COLUMN_SEP_PARAM = ",";
 	public static final String DATA_FILE_PARAM = "input-file";
-	public static final String COLUMN_NAME_PARAM = "columns-to-keep";
-	public static final String TRANSFORMATION_PARAM = "transformation";
+	public static final String CALL_NUM_TYPE = "callno-type";
+	public static final String CALL_NUM_COL_NO = "callno-col-name";
+	public static final String CALL_NUM_DIGITS = "callno-digits";
 	
 	public static void main(String[] args) throws FileNotFoundException
 	{
@@ -32,47 +31,49 @@ public class MakeSortableCallNumbers
 		config.readParams(pathToJSONFile);
 		Map<String,Parameter> params = config.getParamMap();
 		
+
 		
-		String pathToData = params.get(DATA_FILE_PARAM).getValue();
-		String columnsToKeep = params.get(COLUMN_NAME_PARAM).getValue();
-		String transformationToDo = params.get(TRANSFORMATION_PARAM).getValue();
-		
-		String[] desiredCols = columnsToKeep.split(DATA_SEP_PARAM);
-		for(int i=0; i<desiredCols.length; i++)
-			desiredCols[i] = desiredCols[i].trim();
-		
+		String pathToData = params.get(DATA_FILE_PARAM).getValue();		
 		Scanner in = new Scanner(new FileReader(new File(pathToData)));
 		
 		String header = in.nextLine();
 		String[] columnNames = ColumnReducer.separateFields(header);
-		List<String> colList = new ArrayList<String>(desiredCols.length);
+		List<String> colList = new ArrayList<String>();
 		
 		for(String col : columnNames)
 			colList.add(col.trim());
 		
-		int[] indexesToKeep = new int[desiredCols.length];
-		int i=0;
+		int desiredCallNoType = Integer.parseInt(params.get(CALL_NUM_TYPE).getValue());
+		int callNoDigits      = Integer.parseInt(params.get(CALL_NUM_DIGITS).getValue());
+		int indexOfCallNoType = colList.indexOf("CALL_NO_TYPE");
+		int indexOfCallNo     = colList.indexOf("NORMALIZED_CALL_NO");
 		
-		for(String col : desiredCols) {
-			indexesToKeep[i] = colList.indexOf(col);
-			i++;
-		}
-		
+		CallNumber callNumberObj = new CallNumber();
+		callNumberObj.setDigitsOfPrecision(callNoDigits);
 		
 		while(in.hasNextLine()) {
 			String rawLine = in.nextLine();
 			String[] rawFields = ColumnReducer.separateFields(rawLine);
 			
-			int callNoIndex = colList.indexOf("NORMALIZED_CALL_NO");
+			String callNoTypeString = rawFields[indexOfCallNoType];
+			if(callNoTypeString.equals("")) {
+				System.err.println("SKIPPING: " + rawLine);
+				continue;
+			}
 			
-			CallNumber callNumberObj = new CallNumber();
-			String sortable = callNumberObj.CallNumberToSortable(rawFields[callNoIndex]);
-			
-			rawFields[callNoIndex] = sortable;
-					
-			String[] cols = ColumnReducer.removeColumns(rawFields, indexesToKeep);
+			int callNoType = Integer.parseInt(callNoTypeString);
 
-			System.out.println(Arrays.toString(cols));
+			
+			if(callNoType != desiredCallNoType)
+				continue;
+			
+			
+			
+			String sortable = callNumberObj.CallNumberToSortable(rawFields[indexOfCallNo], callNoType);
+			
+
+
+			System.out.println(sortable);
 		}
 		in.close();
 	}
