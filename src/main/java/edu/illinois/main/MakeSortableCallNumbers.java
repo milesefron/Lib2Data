@@ -71,9 +71,10 @@ public class MakeSortableCallNumbers
 			
 			String sortable = callNumberObj.CallNumberToSortable(rawFields[indexOfCallNo], callNoType);
 			
+			if(sortable == null)
+				continue;
 
-
-			System.out.println(sortable);
+			System.out.println(sortable + "\t\t" + rawFields[indexOfCallNo]);
 		}
 		in.close();
 	}
