@@ -13,7 +13,7 @@
     },
     {
 	"name": "callno-digits",
-	"value": "2"
+	"value": "4"
     },
     {
         "name": "dedup-strategy",
