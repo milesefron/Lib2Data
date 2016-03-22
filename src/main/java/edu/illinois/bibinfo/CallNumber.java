@@ -1,6 +1,5 @@
 package edu.illinois.bibinfo;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +13,9 @@ public class CallNumber
 	public static final Pattern LEADING_DOT_PATTERN = Pattern.compile(" \\.");
 	public static final Pattern META_PATTERN = Pattern.compile("[ \\-\\/]");
 	public static final Pattern NUMERIC_PATTERN = Pattern.compile("^[0-9].*");
+	public static final Pattern ALPHA_PATTERN = Pattern.compile(".*[A-Z].*");
+	
+	private boolean omitPrefixes = true;
 	
 	private static final Map<String, String> LETTERS_TO_DIGITS;
 	static {
@@ -67,6 +69,8 @@ public class CallNumber
 		
 		callNumber = callNumberFields[0].trim();
 
+		if(omitPrefixes && callNumberFields.length > 1 && ALPHA_PATTERN.matcher(callNumber).matches())
+			callNumber = callNumberFields[1].trim();
 
 
 		if(! NUMERIC_PATTERN.matcher(callNumber).matches()) {
@@ -95,6 +99,10 @@ public class CallNumber
 	public void setDigitsOfPrecision(int digitsOfPrecision) {
 		this.digitsOfPrecision = digitsOfPrecision;
 	}
-
+	
+	public void setOmitPrefixes(boolean omitPrefixes)
+	{
+		this.omitPrefixes = omitPrefixes;
+	}
 
 }
