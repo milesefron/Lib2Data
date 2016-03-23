@@ -9,8 +9,10 @@ public class BibDate
 	private Pattern DATE_PATTERN = Pattern.compile("[0-9][0-9][0-9][0-9]");
 	
 	private DateRangePolicy dateRangePolicy = DateRangePolicy.START;
-	private boolean rescue = true;
 	
+	private boolean rescue = true;
+	private int earliestYear = 1200;
+	private int latestYear   = 2017;
 	
 	public String getDate(String obs) {
 		String ret = null;
@@ -24,7 +26,7 @@ public class BibDate
 			ret = null;
 		if(ret != null) {
 			int intVal = Integer.parseInt(ret);
-			if(intVal < 1200 || intVal > 2020)
+			if(intVal < earliestYear || intVal > latestYear)
 				ret = null;
 		}
 		

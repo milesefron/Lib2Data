@@ -8,11 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import edu.illinois.bibinfo.CallNumber;
 import edu.illinois.configuration.Configuration;
 import edu.illinois.configuration.ConfigurationJSONImpl;
 import edu.illinois.configuration.Parameter;
 import edu.illinois.dates.BibDate;
+import edu.illinois.dedup.DedupPrevLineSim;
+import edu.illinois.dedup.Deduplicator;
 import edu.illinois.transformations.ColumnReducer;
 
 public class Date2Data
@@ -28,7 +29,8 @@ public class Date2Data
 		config.readParams(pathToJSONFile);
 		Map<String,Parameter> params = config.getParamMap();
 		
-
+		Deduplicator dedup = new DedupPrevLineSim();
+		
 		
 		String pathToData = params.get(DATA_FILE_PARAM).getValue();		
 		Scanner in = new Scanner(new FileReader(new File(pathToData)));
@@ -49,11 +51,13 @@ public class Date2Data
 			String rawLine = in.nextLine();
 			String[] rawFields = ColumnReducer.separateFields(rawLine);
 			
-			String dateString = rawFields[indexOfDate];
-			if(dateString.equals("")) {
-				System.err.println("SKIPPING: " + rawLine);
+			if(!dedup.emit(rawFields))
 				continue;
-			}
+			
+			String dateString = rawFields[indexOfDate];
+			if(dateString.equals(""))
+				continue;
+		
 			
 			
 			
