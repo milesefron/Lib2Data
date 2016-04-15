@@ -9,7 +9,8 @@ public class CallNumber
 {
 
 	public static final int DEWEY_TYPE = 1;
-
+	public static final double DEWEY_TO_DECIMAL = 1.0 / Math.pow(10.0, 3.0);
+	
 	public static final Pattern LEADING_DOT_PATTERN = Pattern.compile(" \\.");
 	public static final Pattern META_PATTERN = Pattern.compile("[ \\-\\/]");
 	public static final Pattern NUMERIC_PATTERN = Pattern.compile("^[0-9].*");
@@ -54,10 +55,50 @@ public class CallNumber
 
 
 	/**
-	 * @param callNumber
-	 * @return
+	 * @param callNumber a raw call number string
+	 * @return a simple/sortable projection of the number
 	 */
-	public String CallNumberToSortable(String callNumber, int callNumberType)
+	public String CallNumberToSortableByMovingDecimal(String callNumber, int callNumberType)
+	{
+		
+		if(callNumberType != DEWEY_TYPE)
+			return null;
+
+		callNumber = LEADING_DOT_PATTERN.matcher(callNumber).replaceAll(" ");
+		
+		String[] callNumberFields = META_PATTERN.split(callNumber);
+		
+		callNumber = callNumberFields[0].trim();
+
+		if(omitPrefixes && callNumberFields.length > 1 && ALPHA_PATTERN.matcher(callNumber).matches())
+			callNumber = callNumberFields[1].trim();
+
+
+		if(! NUMERIC_PATTERN.matcher(callNumber).matches()) {
+			System.err.println("skipping weird Dewey prefix: " + callNumber);
+			return null;
+		}
+
+		Double numeric = 0.0;
+		try {
+			numeric = Double.parseDouble(callNumber);
+		} catch (Exception e) {
+			System.err.println("BAD DEWEY: " + callNumber);
+			return null;
+		}
+		
+		numeric *= DEWEY_TO_DECIMAL;
+		String sortable = Double.toString(numeric);
+
+		return sortable;
+	}
+
+	
+	/**
+	 * @param callNumber a raw call number string
+	 * @return a simple/sortable projection of the number
+	 */
+	public String CallNumberToSortableByRounding(String callNumber, int callNumberType)
 	{
 		
 		if(callNumberType != DEWEY_TYPE)
@@ -91,11 +132,9 @@ public class CallNumber
 		String sortable = intRep.toString();
 
 		return sortable;
-
-
-
 	}
-
+	
+	
 	public void setDigitsOfPrecision(int digitsOfPrecision) {
 		this.digitsOfPrecision = digitsOfPrecision;
 	}
