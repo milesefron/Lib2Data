@@ -75,7 +75,7 @@ public class CallNumber
 
 
 		if(! NUMERIC_PATTERN.matcher(callNumber).matches()) {
-			System.err.println("skipping weird Dewey prefix: " + callNumber);
+			//System.err.println("skipping weird Dewey prefix: " + callNumber);
 			return null;
 		}
 
@@ -83,7 +83,7 @@ public class CallNumber
 		try {
 			numeric = Double.parseDouble(callNumber);
 		} catch (Exception e) {
-			System.err.println("BAD DEWEY: " + callNumber);
+			//System.err.println("BAD DEWEY: " + callNumber);
 			return null;
 		}
 		

@@ -26,6 +26,10 @@ public class ConspectusEntry
 	{
 		return population;
 	}
+	public void setPopulation(int population)
+	{
+		this.population = population;
+	}
 	public String getCategory()
 	{
 		return category;
@@ -79,7 +83,7 @@ public class ConspectusEntry
 	public String toString()
 	{
 		StringBuilder b = new StringBuilder();
-		b.append(category + " // " + division + " :: " + deweyCallNoBottom + "-" + deweyCallNoTop + " -> " + population);
+		b.append(category + " // " + division + " :: " + deweyCallNoBottom + "-" + deweyCallNoTop + "," + population);
 		return b.toString();
 	}
 
