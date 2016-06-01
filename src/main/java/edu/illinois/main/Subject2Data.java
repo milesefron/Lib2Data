@@ -3,25 +3,20 @@ package edu.illinois.main;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
 import edu.illinois.configuration.Configuration;
 import edu.illinois.configuration.ConfigurationJSONImpl;
 import edu.illinois.configuration.Parameter;
-import edu.illinois.dates.BibDate;
-import edu.illinois.dedup.DedupPrevLineSim;
-import edu.illinois.dedup.Deduplicator;
-import edu.illinois.subjects.SubjectHeadings;
 import edu.illinois.transformations.ColumnReducer;
 
 public class Subject2Data
 {
 	public static final String COLUMN_SEP_PARAM = ",";
 	public static final String DATA_FILE_PARAM = "input-file";
-	public static final String TARGET_COLUMN_NAME = "Primary Subject Heading";
+	public static final int COLUMN_OF_SUBJECTS = 3;
 	
 	public static void main(String[] args) throws FileNotFoundException
 	{
@@ -31,20 +26,21 @@ public class Subject2Data
 		config.readParams(pathToJSONFile);
 		Map<String,Parameter> params = config.getParamMap();
 		
-		Deduplicator dedup = new DedupPrevLineSim();
+		Map<String,Integer> histogram = new HashMap<String,Integer>();
+		
+		//Deduplicator dedup = new DedupPrevLineSim();
 		
 		
 		String pathToData = params.get(DATA_FILE_PARAM).getValue();		
 		Scanner in = new Scanner(new FileReader(new File(pathToData)));
 		
-		String header = in.nextLine();
-		String[] columnNames = ColumnReducer.separateFields(header);
-		List<String> colList = new ArrayList<String>();
+		//String header = in.nextLine();
+		//String[] columnNames = ColumnReducer.separateFields(header);
+		//List<String> colList = new ArrayList<String>();
 		
-		for(String col : columnNames)
-			colList.add(col.trim());
+		//for(String col : columnNames)
+		//	colList.add(col.trim());
 		
-		int indexOfSubject       = colList.indexOf(TARGET_COLUMN_NAME);
 		
 		
 		
@@ -52,29 +48,47 @@ public class Subject2Data
 			String rawLine = in.nextLine();
 			String[] rawFields = ColumnReducer.separateFields(rawLine);
 			
-			if(!dedup.emit(rawFields))
-				continue;
 			
-			String subjectString = rawFields[indexOfSubject];
-			if(subjectString.equals(""))
-				continue;
-		
+			String subjectString = rawFields[COLUMN_OF_SUBJECTS];
 			
-			
-			
-			List<String> subjects = SubjectHeadings.extractHeadings(subjectString);
-			
-			
-			if(subjects == null)
-				continue;
-
-			for(String subject : subjects)
-				System.out.print(subject + " ");
-			System.out.println();
+			//subjectString = Subject2Data.formatSubject(subjectString);
+			subjectString = Subject2Data.formatSubjectCoarse(subjectString);
+			Integer current = histogram.get(subjectString);
+			if(current == null)
+				current = 0;
+			current++;
+			histogram.put(subjectString, current);
 			
 			
 		}
 		in.close();
+		
+		for(String subject : histogram.keySet())
+			System.out.println(histogram.get(subject) + "\t\t" + subject);
 	}
 
+	
+	public static String formatSubject(String input)
+	{
+		input = input.replaceAll("\\.", "");
+		
+		/*
+		if(input.contains("$x"))
+			System.err.println(input);
+		
+		if(input.contains("$x"))
+			return input.replaceAll("$x.*", "");
+		*/
+		return input;
+	}
+	
+	public static String formatSubjectCoarse(String input)
+	{
+		input = input.replaceAll("\\.", "");
+		input = input.replaceFirst("\\$.", "");
+		if(input.contains("$"))
+			input = input.substring(0, input.indexOf("$"));
+		
+		return input;
+	}
 }

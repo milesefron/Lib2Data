@@ -17,6 +17,9 @@ public class BibDate
 	public String getDate(String obs) {
 		String ret = null;
 		
+		//if(obs.contains("-") || obs.contains("u"))
+		//	return null;
+		
 		if(obs.contains("-"))
 			ret = handleRange(obs);
 		else
