@@ -1,5 +1,6 @@
 package edu.illinois.bibinfo;
 
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +16,8 @@ public class CallNumber
 	public static final Pattern META_PATTERN = Pattern.compile("[ \\-\\/]");
 	public static final Pattern NUMERIC_PATTERN = Pattern.compile("^[0-9].*");
 	public static final Pattern ALPHA_PATTERN = Pattern.compile(".*[A-Z].*");
+	
+	private static final DecimalFormat formatter = new DecimalFormat("#.##");
 	
 	private boolean omitPrefixes = true;
 	
@@ -54,45 +57,62 @@ public class CallNumber
 
 
 
-	/**
-	 * @param callNumber a raw call number string
-	 * @return a simple/sortable projection of the number
-	 */
-	public String CallNumberToSortableByMovingDecimal(String callNumber, int callNumberType)
+
+	
+	public String CallNumberToSortableByFormatting(String callNumber, int callNumberType)
 	{
+		callNumber = callNumber.trim();
+		
+		String pristine = callNumber;
 		
 		if(callNumberType != DEWEY_TYPE)
 			return null;
 
 		callNumber = LEADING_DOT_PATTERN.matcher(callNumber).replaceAll(" ");
-		
+		//callNumber = callNumber.replaceAll(" +", " ");
+
 		String[] callNumberFields = META_PATTERN.split(callNumber);
 		
-		callNumber = callNumberFields[0].trim();
-
+		if(callNumberFields == null || callNumberFields.length == 0)
+			return "-1";
+		
+		int properIndex = 0;
+		for(int i=0; i<callNumberFields.length; i++)
+			if(callNumberFields[i].matches(".*[0-9][0-9][0-9].*"))
+				properIndex = i;
+		
+		callNumber = callNumberFields[properIndex].trim();
+		
 		if(omitPrefixes && callNumberFields.length > 1 && ALPHA_PATTERN.matcher(callNumber).matches())
-			callNumber = callNumberFields[1].trim();
+			callNumber = callNumberFields[properIndex].trim();
 
+		callNumber = callNumber.replaceAll("[ A-Za-z]*", "");
 
-		if(! NUMERIC_PATTERN.matcher(callNumber).matches()) {
-			//System.err.println("skipping weird Dewey prefix: " + callNumber);
-			return null;
+		
+		// System.err.print("BEFORE: " + callNumber + " /" + pristine + ":: ");
+		callNumber = callNumber.replaceAll("[A-Za-z]", "");
+		if(callNumber.startsWith(".")) {
+			callNumber = callNumber.replaceFirst("\\.", "");
 		}
+		callNumber = callNumber.trim();
+		// System.err.println("AFTER: " + callNumber);
 
 		Double numeric = 0.0;
 		try {
 			numeric = Double.parseDouble(callNumber);
 		} catch (Exception e) {
-			//System.err.println("BAD DEWEY: " + callNumber);
+			//System.err.println("BAD!! " + callNumber);
 			return null;
 		}
 		
-		numeric *= DEWEY_TO_DECIMAL;
-		String sortable = Double.toString(numeric);
-
+		if(numeric > 1001) {
+			return "-2";
+			// System.err.println("  bad callno: " + callNumber);
+		}
+		
+		String sortable = formatter.format(numeric);
 		return sortable;
 	}
-
 	
 	/**
 	 * @param callNumber a raw call number string

@@ -51,7 +51,7 @@ public class Subject2Data
 			
 			String subjectString = rawFields[COLUMN_OF_SUBJECTS];
 			
-			//subjectString = Subject2Data.formatSubject(subjectString);
+			// subjectString = Subject2Data.formatSubject(subjectString);
 			subjectString = Subject2Data.formatSubjectCoarse(subjectString);
 			Integer current = histogram.get(subjectString);
 			if(current == null)
@@ -71,14 +71,6 @@ public class Subject2Data
 	public static String formatSubject(String input)
 	{
 		input = input.replaceAll("\\.", "");
-		
-		/*
-		if(input.contains("$x"))
-			System.err.println(input);
-		
-		if(input.contains("$x"))
-			return input.replaceAll("$x.*", "");
-		*/
 		return input;
 	}
 	

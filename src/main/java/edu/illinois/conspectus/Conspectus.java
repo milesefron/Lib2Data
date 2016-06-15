@@ -5,17 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import edu.illinois.bibinfo.CallNumber;
-import edu.illinois.dedup.DedupPrevLineSim;
-import edu.illinois.dedup.Deduplicator;
 import edu.illinois.transformations.ColumnReducer;
 
 public class Conspectus
@@ -29,6 +23,8 @@ public class Conspectus
 	public static int LC_CALL_COL  = 2;
 	public static int DEWEY_CALL_COL = 3;
 
+	private boolean widen = false;
+	
 	private List<ConspectusEntry> entries;
 	private int[] cellCounts;
 
@@ -41,7 +37,6 @@ public class Conspectus
 	{
 		int skipped = 0;
 
-		Deduplicator dedup = new DedupPrevLineSim();
 
 		try
 		{
@@ -52,8 +47,6 @@ public class Conspectus
 				String line = in.nextLine();
 				String[] fields = ColumnReducer.separateFields(line);
 				
-				if(!dedup.emit(fields))
-					continue;
 				
 				if(fields.length < 4) {
 					skipped++;
@@ -71,26 +64,39 @@ public class Conspectus
 
 				String[] deweys = DASH_PATTERN.split(deweyCallNo);
 
+				
 
 				ConspectusEntry entry = new ConspectusEntry();
 				entry.setCategory(category);
 				entry.setDivision(division);
 				float dLower = 0.0f;
 				float dUpper = 0.0f;
-								
+					
+
 				CallNumber callNoObj = new CallNumber();
 				if(deweys.length > 0) {
 					if(deweys[0].startsWith("."))
 						deweys[0] = "0" + deweys[1];
-					dLower = Float.parseFloat(callNoObj.CallNumberToSortableByMovingDecimal(deweys[0], CallNumber.DEWEY_TYPE));
+					dLower = Float.parseFloat(callNoObj.CallNumberToSortableByFormatting(deweys[0], CallNumber.DEWEY_TYPE));	
 				}
 				if(deweys.length > 1) {
 					if(deweys[1].startsWith("."))
 						deweys[1] = "0" + deweys[1];
-					dUpper = Float.parseFloat(callNoObj.CallNumberToSortableByMovingDecimal(deweys[1], CallNumber.DEWEY_TYPE));
-				} else
-					dUpper = dLower;
+					dUpper = Float.parseFloat(callNoObj.CallNumberToSortableByFormatting(deweys[1], CallNumber.DEWEY_TYPE));
 				
+					
+				  //deal with integer call numbers
+				} else { 
+					if(!widen)
+						dUpper = dLower;
+					else
+						dUpper = dLower + 0.99f; 
+					
+				}
+				
+
+
+				//System.err.println(dLower + "\t\t" + dUpper);
 				entry.setDeweyCallNoBottom(dLower);;
 				entry.setDeweyCallNoTop(dUpper);
 
@@ -130,7 +136,10 @@ public class Conspectus
 
 
 				CallNumber callNoObj = new CallNumber();
-				String callNoString = callNoObj.CallNumberToSortableByMovingDecimal(fields[11], 1);
+				if(fields.length < 12)
+					continue;
+				
+				String callNoString = callNoObj.CallNumberToSortableByFormatting(fields[11], 1);
 				if(callNoString == null)
 					continue;
 				float callNoFloat = Float.parseFloat(callNoString);
@@ -140,19 +149,22 @@ public class Conspectus
 				for(ConspectusEntry entry : entries) {
 					if(entry.deweyBelongsIn(callNoFloat)) {
 						cellCounts[i]++;
+						//System.err.println(fields[11] + "," + callNoString + "," + entry.getCategory() + " // " + entry.getDivision());
 						break;
 					}
 					i++;
 				}
-				if(i == entries.size())
+				if(i == entries.size()) {
 					orphans++;
-				else
+					System.err.println("ORPHAN: " + fields[0] + "," +  fields[11]);
+				} else
 					nonOrphans++;
 				
 			}
 			System.err.println("done.");
 			System.err.println("CSV READ-IN STATS");
-			System.err.println("ORPHANS: " + orphans + " :: %" + (float)orphans/nonOrphans);
+			System.err.println("NON-ORPHANS: " + nonOrphans);
+			System.err.println("ORPHANS: " + orphans + " :: %" + 100 * (float)orphans/((float)nonOrphans + (float)orphans));
 
 		// reindex entries with count data
 		int i=0;
@@ -176,6 +188,11 @@ public class Conspectus
 		return entries;
 	}
 
+	public void setWidening(boolean widen)
+	{
+		this.widen = widen;
+	}
+	
 	public static void main(String[] args) throws FileNotFoundException
 	{
 		String pathToData = "./data/google.csv";
@@ -183,14 +200,22 @@ public class Conspectus
 
 		Conspectus conspectus = new Conspectus();
 		conspectus.readFromFile(pathToConspectus);
-		conspectus.populateWithData(pathToData);
 		
+		String rawCallNoField = "631.6";
+		CallNumber callNoObj = new CallNumber();
+		String callNoString = callNoObj.CallNumberToSortableByFormatting(rawCallNoField, 1);
+		float callNoFloat = Float.parseFloat(callNoString);
 		
+		System.err.println(callNoFloat);
 		
+		// horribly ineffecient.
 		List<ConspectusEntry> entries = conspectus.getEntries();
-		Collections.sort(entries, new EntryComparator());
-		for(ConspectusEntry e : entries)
-			System.out.println(e);
+		for(ConspectusEntry entry : entries) {
+			if(entry.deweyBelongsIn(callNoFloat)) {
+				System.err.println(callNoString + "," + entry.getCategory() + " // " + entry.getDivision());
+				break;
+			}
+		}
 		
 	}
 }

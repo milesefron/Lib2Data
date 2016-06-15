@@ -1,7 +1,7 @@
 [
     {
         "name": "input-file",
-        "value": "./data/google.csv"
+        "value": "./data/from-oclc/analysis-rare-0-23.csv"
     },
     {
         "name": "conspectus-file",

@@ -1,6 +1,5 @@
 package edu.illinois.conspectus;
 
-import java.util.Comparator;
 
 public class ConspectusEntry 
 {

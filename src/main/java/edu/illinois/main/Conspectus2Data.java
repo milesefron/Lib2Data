@@ -2,6 +2,7 @@ package edu.illinois.main;
 
 import java.io.FileNotFoundException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,11 @@ public class Conspectus2Data
 		
 		// read in the conspectus
 		Conspectus conspectus = new Conspectus();
+		
+		// do we want to widen the conspectus categories?
+		conspectus.setWidening(true);
+		
+		
 		conspectus.readFromFile(pathToConspectus);
 		
 		// handle the CSV bib data
@@ -41,6 +47,7 @@ public class Conspectus2Data
 		
 		
 		List<ConspectusEntry> entries = conspectus.getEntries();
+		
 		Collections.sort(entries, new EntryComparator());
 		for(ConspectusEntry e : entries)
 			System.out.println(e);

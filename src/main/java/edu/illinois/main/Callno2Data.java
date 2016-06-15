@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -56,6 +57,7 @@ public class Callno2Data
 		callNumberObj.setDigitsOfPrecision(callNoDigits);
 		callNumberObj.setOmitPrefixes(removePrefixes);
 
+		int nulls = 0;
 		while(in.hasNextLine()) {
 			String rawLine = in.nextLine();
 			String[] rawFields = ColumnReducer.separateFields(rawLine);
@@ -64,26 +66,57 @@ public class Callno2Data
 				continue;
 			
 			String callNoTypeString = rawFields[indexOfCallNoType];
-			if(callNoTypeString.equals("")) 
+			if(callNoTypeString.equals("") || callNoTypeString.equals(" ")) 
 				continue;
 			
 
-			int callNoType = Integer.parseInt(callNoTypeString);
+			
+			
+			int callNoType = 1;
+			
+			if(Callno2Data.isNumeric(callNoTypeString))
+				Integer.parseInt(callNoTypeString);
 
 
+			
 			if(callNoType != desiredCallNoType)
 				continue;
 
 
-
-			String sortable = callNumberObj.CallNumberToSortableByMovingDecimal(rawFields[indexOfCallNo], callNoType);
-
-			if(sortable == null)
+			String sortable = callNumberObj.CallNumberToSortableByFormatting(rawFields[indexOfCallNo], callNoType);
+			
+			if(sortable == null) {
+				nulls++;
+				System.err.println("FAILURE: " + sortable + "  ::  " + rawFields[indexOfCallNo]);
+				System.err.println(Arrays.toString(rawFields));
 				continue;
+			} else {
+				//System.err.println("SUCCES: " + sortable + "  ::  " + rawFields[indexOfCallNo]);
+			}
 
-			System.out.println(sortable); // + "\t\t# " + rawFields[indexOfCallNo]);
+			float parsed = Float.parseFloat(sortable);
+			if(parsed < 0)
+				continue;
+			
+			System.out.println(sortable);
+			
 		}
 		in.close();
+		System.err.println(nulls + " null callnos.");
 	}
 
+	
+	
+	public static boolean isNumeric(String str)  
+	{  
+	  try  
+	  {  
+	    Integer.parseInt(str);  
+	  }  
+	  catch(NumberFormatException nfe)  
+	  {  
+	    return false;  
+	  }  
+	  return true;  
+	}
 }

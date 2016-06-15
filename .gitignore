@@ -1,6 +1,8 @@
 .classpath
 .project
 .settings
+.Rhistory
 data
 output
 mallet
+target
