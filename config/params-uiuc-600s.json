@@ -1,7 +1,7 @@
 [
     {
         "name": "input-file",
-        "value": "./data/from-oclc/analysis-rare-0-23.csv"
+        "value": "./data/from-uiuc/600s-rare-0-03.csv"
     },
     {
         "name": "conspectus-file",
@@ -17,7 +17,7 @@
     },
     {
 	"name": "callno-digits",
-	"value": "4"
+	"value": "2"
     },
     {
         "name": "dedup-strategy",

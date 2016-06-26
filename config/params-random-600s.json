@@ -1,0 +1,26 @@
+[
+    {
+        "name": "input-file",
+        "value": "./data/random-sample/random-600s"
+    },
+    {
+        "name": "conspectus-file",
+        "value": "./data/conspectus.csv"
+    },
+    {
+	"name": "callno-col-name",
+	"value": "NORMALIZED_CALL_NO"
+    },
+    {
+	"name": "callno-type",
+	"value": "1"
+    },
+    {
+	"name": "callno-digits",
+	"value": "2"
+    },
+    {
+        "name": "dedup-strategy",
+        "value": "null"
+    }
+]
